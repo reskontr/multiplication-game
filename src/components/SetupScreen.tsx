@@ -1,5 +1,5 @@
 import { ArrowRight, Check } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { DelayMode, GameSettings, Language, Table } from '../game/types'
 import { TABLES } from '../game/engine'
 import {
@@ -14,9 +14,75 @@ import {
 } from '../game/config'
 import { useTranslation } from '../i18n/useTranslation'
 
+const SETUP_SETTINGS_KEY = 'kertotaulupeli-setup-settings'
+
 interface SetupScreenProps {
   language: Language
   onStart: (settings: GameSettings) => void
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function readSavedSettings(): GameSettings {
+  const stored = window.localStorage.getItem(SETUP_SETTINGS_KEY)
+  if (!stored) {
+    return {
+      playerName: '',
+      selectedTables: DEFAULT_SELECTED_TABLES,
+      timeoutSeconds: DEFAULT_TIMEOUT_SECONDS,
+      masteryTarget: DEFAULT_MASTERY_TARGET,
+      delayMode: DEFAULT_DELAY_MODE,
+    }
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(stored)
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) {
+      throw error
+    }
+    return readSavedSettingsDefaults()
+  }
+
+  if (!isRecord(parsed)) {
+    return readSavedSettingsDefaults()
+  }
+
+  const savedTables = parsed.selectedTables
+  const selectedTables = Array.isArray(savedTables)
+    ? TABLES.filter((table) => savedTables.includes(table))
+    : DEFAULT_SELECTED_TABLES
+
+  return {
+    playerName: typeof parsed.playerName === 'string' ? parsed.playerName.slice(0, 20) : '',
+    selectedTables,
+    timeoutSeconds: isValidNumber(parsed.timeoutSeconds, MIN_TIMEOUT, MAX_TIMEOUT)
+      ? parsed.timeoutSeconds
+      : DEFAULT_TIMEOUT_SECONDS,
+    masteryTarget: isValidNumber(parsed.masteryTarget, MIN_MASTERY, MAX_MASTERY)
+      ? parsed.masteryTarget
+      : DEFAULT_MASTERY_TARGET,
+    delayMode: parsed.delayMode === 'slow' || parsed.delayMode === 'normal' || parsed.delayMode === 'fast'
+      ? parsed.delayMode
+      : DEFAULT_DELAY_MODE,
+  }
+}
+
+function readSavedSettingsDefaults(): GameSettings {
+  return {
+    playerName: '',
+    selectedTables: DEFAULT_SELECTED_TABLES,
+    timeoutSeconds: DEFAULT_TIMEOUT_SECONDS,
+    masteryTarget: DEFAULT_MASTERY_TARGET,
+    delayMode: DEFAULT_DELAY_MODE,
+  }
+}
+
+function isValidNumber(value: unknown, minimum: number, maximum: number): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= minimum && value <= maximum
 }
 
 function clamp(value: number, minimum: number, maximum: number) {
@@ -25,13 +91,25 @@ function clamp(value: number, minimum: number, maximum: number) {
 
 export function SetupScreen({ language, onStart }: SetupScreenProps) {
   const { t } = useTranslation(language)
-  const [name, setName] = useState('')
-  const [selectedTables, setSelectedTables] = useState<Table[]>(DEFAULT_SELECTED_TABLES)
-  const [timeoutSeconds, setTimeoutSeconds] = useState(DEFAULT_TIMEOUT_SECONDS)
-  const [timeoutText, setTimeoutText] = useState(String(DEFAULT_TIMEOUT_SECONDS))
-  const [masteryTarget, setMasteryTarget] = useState(DEFAULT_MASTERY_TARGET)
-  const [masteryText, setMasteryText] = useState(String(DEFAULT_MASTERY_TARGET))
-  const [delayMode, setDelayMode] = useState<DelayMode>(DEFAULT_DELAY_MODE)
+  const [initialSettings] = useState(readSavedSettings)
+  const [name, setName] = useState(initialSettings.playerName)
+  const [selectedTables, setSelectedTables] = useState<Table[]>(initialSettings.selectedTables)
+  const [timeoutSeconds, setTimeoutSeconds] = useState(initialSettings.timeoutSeconds)
+  const [timeoutText, setTimeoutText] = useState(String(initialSettings.timeoutSeconds))
+  const [masteryTarget, setMasteryTarget] = useState(initialSettings.masteryTarget)
+  const [masteryText, setMasteryText] = useState(String(initialSettings.masteryTarget))
+  const [delayMode, setDelayMode] = useState<DelayMode>(initialSettings.delayMode)
+
+  useEffect(() => {
+    const settings: GameSettings = {
+      playerName: name,
+      selectedTables,
+      timeoutSeconds,
+      masteryTarget,
+      delayMode,
+    }
+    window.localStorage.setItem(SETUP_SETTINGS_KEY, JSON.stringify(settings))
+  }, [delayMode, masteryTarget, name, selectedTables, timeoutSeconds])
 
   const updateTimeout = (value: number) => {
     const safeValue = clamp(value, MIN_TIMEOUT, MAX_TIMEOUT)
