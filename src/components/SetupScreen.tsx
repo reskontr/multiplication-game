@@ -1,9 +1,10 @@
 import { ArrowRight, Check } from 'lucide-react'
 import { useState } from 'react'
-import type { GameSettings, Language, Table } from '../game/types'
+import type { DelayMode, GameSettings, Language, Table } from '../game/types'
 import { TABLES } from '../game/engine'
 import {
   DEFAULT_MASTERY_TARGET,
+  DEFAULT_DELAY_MODE,
   DEFAULT_SELECTED_TABLES,
   DEFAULT_TIMEOUT_SECONDS,
   MAX_MASTERY_TARGET as MAX_MASTERY,
@@ -30,6 +31,7 @@ export function SetupScreen({ language, onStart }: SetupScreenProps) {
   const [timeoutText, setTimeoutText] = useState(String(DEFAULT_TIMEOUT_SECONDS))
   const [masteryTarget, setMasteryTarget] = useState(DEFAULT_MASTERY_TARGET)
   const [masteryText, setMasteryText] = useState(String(DEFAULT_MASTERY_TARGET))
+  const [delayMode, setDelayMode] = useState<DelayMode>(DEFAULT_DELAY_MODE)
 
   const updateTimeout = (value: number) => {
     const safeValue = clamp(value, MIN_TIMEOUT, MAX_TIMEOUT)
@@ -65,14 +67,12 @@ export function SetupScreen({ language, onStart }: SetupScreenProps) {
       selectedTables,
       timeoutSeconds,
       masteryTarget,
+      delayMode,
     })
   }
 
   return (
     <main className="setup-screen">
-      <section className="setup-intro" aria-labelledby="setup-title">
-        <h1 id="setup-title">{t('welcome')}</h1>
-      </section>
 
       <form className="setup-form" onSubmit={handleStart}>
         <div className="form-section name-section">
@@ -193,6 +193,25 @@ export function SetupScreen({ language, onStart }: SetupScreenProps) {
             />
             <div className="range-ends"><span>{MIN_MASTERY}×</span><span>{MAX_MASTERY}×</span></div>
           </div>
+        </div>
+
+        <div className="form-section">
+          <label className="field-label" htmlFor="delay-mode">{t('feedbackDelay')}</label>
+          <select
+            id="delay-mode"
+            className="text-input"
+            value={delayMode}
+            onChange={(event) => {
+              const value = event.target.value
+              if (value === 'slow' || value === 'normal' || value === 'fast') {
+                setDelayMode(value)
+              }
+            }}
+          >
+            <option value="slow">{t('slow')}</option>
+            <option value="normal">{t('normal')}</option>
+            <option value="fast">{t('fast')}</option>
+          </select>
         </div>
 
         <button className="primary-button start-button" type="submit" disabled={!name.trim() || selectedTables.length === 0}>

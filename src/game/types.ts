@@ -1,5 +1,7 @@
 export type Language = 'fi' | 'en'
 
+export type DelayMode = 'slow' | 'normal' | 'fast'
+
 export type Table = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 
 export type FactId = `${Table}x${number}`
@@ -16,6 +18,7 @@ export interface GameSettings {
   selectedTables: Table[]
   timeoutSeconds: number
   masteryTarget: number
+  delayMode: DelayMode
 }
 
 export type GamePhase = 'setup' | 'playing' | 'feedback' | 'complete'

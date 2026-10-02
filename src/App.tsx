@@ -4,6 +4,7 @@ import { CompletionScreen } from './components/CompletionScreen'
 import { FeedbackOverlay } from './components/FeedbackOverlay'
 import { GameScreen } from './components/GameScreen'
 import { SetupScreen } from './components/SetupScreen'
+import { FEEDBACK_DELAYS_MS } from './game/config'
 import { createSession, gameReducer } from './game/engine'
 import type { GameAction, GameSession, GameSettings, Language } from './game/types'
 import { getInitialLanguage } from './i18n/translations'
@@ -66,7 +67,8 @@ function App() {
       return
     }
 
-    const delay = session.lastFeedback.correct ? 650 : 1300
+    const delays = FEEDBACK_DELAYS_MS[session.settings.delayMode]
+    const delay = session.lastFeedback.correct ? delays.correct : delays.incorrect
     const timeoutId = window.setTimeout(() => dispatch({ type: 'NEXT' }), delay)
     return () => window.clearTimeout(timeoutId)
   }, [session])

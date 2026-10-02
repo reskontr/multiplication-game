@@ -3,7 +3,6 @@ import type { Language } from '../game/types'
 export const translations = {
   fi: {
     appName: 'Kertotaulupeli',
-    welcome: 'Tervetuloa pelaamaan',
     playerName: 'Nimi',
     namePlaceholder: 'Pelaajan nimi',
     tables: 'Taulut',
@@ -12,6 +11,10 @@ export const translations = {
     selected: '{count} valittu',
     answerTime: 'Vastausaika',
     masteryTarget: 'Oikeita vastauksia putkeen',
+    feedbackDelay: 'Palautteen viive',
+    slow: 'Hidas',
+    normal: 'Normaali',
+    fast: 'Nopea',
     secondsShort: 's',
     start: 'Aloita peli',
     check: 'Tarkista',
@@ -39,7 +42,6 @@ export const translations = {
   },
   en: {
     appName: 'Multiply game',
-    welcome: 'Welcome to play',
     playerName: 'Name',
     namePlaceholder: 'Player name',
     tables: 'Tables',
@@ -48,6 +50,10 @@ export const translations = {
     selected: '{count} selected',
     answerTime: 'Answer time',
     masteryTarget: 'Consecutive correct answers',
+    feedbackDelay: 'Feedback delay',
+    slow: 'Slow',
+    normal: 'Normal',
+    fast: 'Fast',
     secondsShort: 's',
     start: 'Start game',
     check: 'Check',
