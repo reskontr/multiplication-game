@@ -41,7 +41,7 @@ export const translations = {
     countdownAria: 'Peli alkaa luvulla {count}',
   },
   en: {
-    appName: 'Multiply game',
+    appName: 'Multiplication game',
     playerName: 'Name',
     namePlaceholder: 'Player name',
     tables: 'Tables',
